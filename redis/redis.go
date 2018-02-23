@@ -5,11 +5,17 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/RichardKnop/go-oauth2-server/config"
-	"github.com/RichardKnop/go-oauth2-server/session"
+	"github.com/coincircle/go-oauth2-server/session"
 	"github.com/gorilla/sessions"
 	redisStore "gopkg.in/boj/redistore.v1"
 )
+
+// SessionConfig sets the necessary session information
+type SessionConfig struct {
+	Path     string
+	MaxAge   int
+	HTTPOnly bool
+}
 
 // ConfigType is used to connect to the redis db
 type ConfigType struct {
@@ -31,7 +37,7 @@ type CustomSessionServiceType struct {
 }
 
 // NewService starts the redis connection and sets the session options
-func NewService(cnf *config.Config, redisConfig ConfigType) *CustomSessionServiceType {
+func NewService(cnf *SessionConfig, redisConfig ConfigType) *CustomSessionServiceType {
 	store, err := redisStore.NewRediStore(redisConfig.Size, redisConfig.Network, redisConfig.Address, redisConfig.Password, redisConfig.SessionSecrets...)
 	if err != nil {
 		log.Fatal(err)
@@ -42,9 +48,9 @@ func NewService(cnf *config.Config, redisConfig ConfigType) *CustomSessionServic
 		sessionStore: store,
 		// Session options
 		sessionOptions: &sessions.Options{
-			Path:     cnf.Session.Path,
-			MaxAge:   cnf.Session.MaxAge,
-			HttpOnly: cnf.Session.HTTPOnly,
+			Path:     cnf.Path,
+			MaxAge:   cnf.MaxAge,
+			HttpOnly: cnf.HTTPOnly,
 		},
 	}
 }
